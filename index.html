@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>colony counter</title>
+		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<!--[if IE]>
+		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.js"></script>
+		<script src="/cc/script/modernizr.js"></script>
+		<meta name="viewport" content="width=device-width">
+
+		<style>
+			<!-- use for images that get uploaded -->
+			.obj {
+				height: auto;
+				width: auto;
+				border: 1px solid gray;
+			}
+		</style>
+
+	</head>
+	<body>
+
+		<div id="output" style="min-height: 100px; white-space: pre; border: 1px solid black;"
+			ondrop="event.stopPropagation(); event.preventDefault(); dodrop(event);"
+			ondragenter="document.getElementById('output').textContent = ''; event.stopPropagation(); event.preventDefault();"
+			ondragover="event.stopPropagation(); event.preventDefault();">
+		</div>
+		<div id="preview"></div>
+
+		<canvas id="viewer" width="400" height="400">
+		</canvas>
+
+		<script>
+			var image;
+			var canvas = document.getElementById("viewer");
+			var preview = document.getElementById("preview");
+
+			function dodrop(event)
+			{
+				var dt = event.dataTransfer;
+				var files = dt.files;
+
+				var count = files.length;
+				output("File Count: " + count + "\n");
+
+				for (var i = 0; i < files.length; i++) {
+					var file = files[i];
+					var imageType = /image.*/;
+
+					if (!file.type.match(imageType)) {
+						continue;
+					}
+
+					var img = document.createElement("img");
+					img.classList.add("obj");
+					img.file = file;
+					preview.appendChild(img);
+
+					var reader = new FileReader();
+					reader.onload = (function(aImg) { 
+						// successful
+						return function(e) { 
+							aImg.src = e.target.result; 
+						}; 
+					})(img);
+
+					reader.onerror = (function(error,message) {
+						console.log(error,message);
+					});
+					reader.readAsDataURL(file);
+				}
+			}
+
+			function output(text)
+			{
+				document.getElementById("output").textContent += text;
+				//dump(text);
+			}
+
+			$(document).ready(function() {
+				//alert(Modernizr.draganddrop);
+
+				$("#viewer").click(function(e) {
+					console.log(e.pageX, " ", e.pageY);
+
+				})
+
+			});
+
+		</script>
+	</body>
+</html>

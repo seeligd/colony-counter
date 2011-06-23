@@ -1,0 +1,86 @@
+<html>
+<head>
+    <script type="text/javascript">
+        function GetFileInfo () {
+            var fileInput = document.getElementById ("fileInput");
+
+            if ('files' in fileInput) {
+                if (fileInput.files.length > 0) {
+                    var file = fileInput.files[0];
+
+                    var data = file.getAsBinary ();
+                    CreateInfo (data, 1);
+
+                    var data = file.getAsDataURL ();
+                    CreateInfo (data, 2);
+
+                    var data = file.getAsText ('utf-8');
+                    CreateInfo (data, 3);
+                }
+            }
+            else {
+                alert ("Your browser doesn't support the files property!");
+            }
+            
+        }
+
+        function CreateInfo (data, rowIdx) {
+            var infoTable = document.getElementById ("info");
+            var row = infoTable.rows[rowIdx];
+
+            row.cells[1].innerHTML = data;
+            row.cells[2].innerHTML = data.length;
+
+            var txt = "";
+            for (var i=0; i < data.length; i++) {
+                txt += data.charCodeAt (i);
+                if (i < data.length) {
+                    txt +=  ", ";
+                }
+            }
+            row.cells[3].innerHTML = txt;
+
+        }
+    </script>
+
+</head>
+<body onload="GetFileInfo ()">
+    <p>
+        Please download and save <a href="utf8.txt">this</a> 
+        UTF-8 encoded spanish text file first.
+    </p>
+
+    Please select the downloaded text file:
+    <input id="fileInput" type="file" size="50" onchange="GetFileInfo ()" />
+
+    <br /><br />
+    <table border="1px" id="info">
+        <tbody>
+            <tr>
+                <th>function</th>
+                <th>text</th>
+                <th>length</th>
+                <th>char codes</th>
+            </tr>
+            <tr>
+                <td>getAsBinary ()</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>getAsDataURL ()</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>getAsText ()</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
