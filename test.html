@@ -1,86 +1,80 @@
 <html>
-<head>
-    <script type="text/javascript">
-        function GetFileInfo () {
-            var fileInput = document.getElementById ("fileInput");
+	<head>
+		<script type="text/javascript">
+		</script>
 
-            if ('files' in fileInput) {
-                if (fileInput.files.length > 0) {
-                    var file = fileInput.files[0];
+		<style>
+			#image, .overlay, #overlay {
+				position: absolute;
+				top :0px; 
+				left: 0px;
+			}
 
-                    var data = file.getAsBinary ();
-                    CreateInfo (data, 1);
+			#image {
+				z-index: 1;
+			}
 
-                    var data = file.getAsDataURL ();
-                    CreateInfo (data, 2);
+			#overlay {
+				background: yellow;
+				opacity: 0.4;
+				z-index: 5;
+			}
 
-                    var data = file.getAsText ('utf-8');
-                    CreateInfo (data, 3);
-                }
-            }
-            else {
-                alert ("Your browser doesn't support the files property!");
-            }
-            
-        }
+			.overlay {
+				background: purple;
+				z-index: 3;
+				min-width: 2px;
+				min-height: 2px;
+			}
 
-        function CreateInfo (data, rowIdx) {
-            var infoTable = document.getElementById ("info");
-            var row = infoTable.rows[rowIdx];
+			#notes {
+				position: absolute;
+				bottom:0px;
+			}
 
-            row.cells[1].innerHTML = data;
-            row.cells[2].innerHTML = data.length;
+		</style>
+	</head>
+	<body >
+		<div id='container'>
+			<img id='image' src="http://www.google.com/images/logos/ps_logo2.png" />
+			<div id='overlay'>&nbsp;</div>
+		</div>
 
-            var txt = "";
-            for (var i=0; i < data.length; i++) {
-                txt += data.charCodeAt (i);
-                if (i < data.length) {
-                    txt +=  ", ";
-                }
-            }
-            row.cells[3].innerHTML = txt;
 
-        }
-    </script>
+		<div id="notes">
 
-</head>
-<body onload="GetFileInfo ()">
-    <p>
-        Please download and save <a href="utf8.txt">this</a> 
-        UTF-8 encoded spanish text file first.
-    </p>
+			<input type="button" onclick="increaseSize()" value="increase"></input>
+			<input type="button" onclick="addItem()" value="add"></input>
+			if you put stuff in the overlay div, and then make the overlay div bigger, what happens to the things that wend in there?
+		</div>
 
-    Please select the downloaded text file:
-    <input id="fileInput" type="file" size="50" onchange="GetFileInfo ()" />
+		<script>
+			function increaseSize() {
+				var img = document.getElementById('image')
+				var overlay = document.getElementById('overlay')
+				var ratio = img.height / img.width;
+				img.height += 10*ratio;
+				img.width += 10;
 
-    <br /><br />
-    <table border="1px" id="info">
-        <tbody>
-            <tr>
-                <th>function</th>
-                <th>text</th>
-                <th>length</th>
-                <th>char codes</th>
-            </tr>
-            <tr>
-                <td>getAsBinary ()</td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>getAsDataURL ()</td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>getAsText ()</td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
-</body>
+				overlay.style.width=img.width;
+				overlay.style.height=img.height;
+				console.log(img.height);
+
+			}
+
+			function addItem() {
+				var container = document.getElementById('container')
+				var item = document.createElement("div");
+				item.top=40;
+				item.left=50;
+				item.className = "overlay";
+				container.appendChild(item);
+				item.style.top="40px";
+				item.style.width="10px";
+				item.style.height="10px";
+				item.style.left="50px";
+
+			}
+		</script>
+	</body>
 </html>

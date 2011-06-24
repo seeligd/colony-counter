@@ -4,6 +4,7 @@
 		<meta charset="utf-8" />
 		<title>colony counter</title>
 		<link rel="stylesheet" type="text/css" href="css/style.css" />
+		<link rel="stylesheet" type="text/css" href="css/stickyfooter.css" />
 		<!--[if IE]>
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
@@ -13,31 +14,118 @@
 		<meta name="viewport" content="width=device-width">
 
 		<style>
-			<!-- use for images that get uploaded -->
-			.obj {
-				height: auto;
-				width: auto;
-				border: 1px solid gray;
+
+			body {
+				font-family: Helvetica, Arial, sans-serif;
+				color: #555;
+				font-size: .8em;
 			}
+			#left-wrap{
+				float: left;
+				width: 100%;
+			}
+			#left{
+				background-color: cyan;
+				margin-right: 200px;
+			}
+			#right{
+				float: left;
+				width: 200px;
+				margin-left: -200px;
+			}
+			#clear{
+				clear: both;
+			}
+
+			/* use for images that get imported */
+			.obj {
+				max-width: 100%;
+			}
+
+			/* count number of clicks */
+			.count {
+			}
+
+			/* area where images get placed and edited */
+			#viewer {
+				margin: 0;
+				background: #777;
+				min-height: 500px;
+				text-align: center;
+			}
+
+			.viewer-instructions {
+				padding: 10%;
+			}
+
+			.labels, .values {
+				line-height: 20px;
+				margin-top: 20px;
+			}
+			.labels {
+				text-align: right;
+				float:left;
+				color: #999;
+				width: 45px;
+			}
+			.values {
+				float: right;
+				color: #777;
+				width: 150px;
+
+			}
+
+			#log {
+				height: 130px;
+				overflow:scroll;
+			}
+
 		</style>
 
 	</head>
 	<body>
 
-		<div id="output" style="min-height: 100px; white-space: pre; border: 1px solid black;"
-			ondrop="event.stopPropagation(); event.preventDefault(); dodrop(event);"
-			ondragenter="document.getElementById('output').textContent = ''; event.stopPropagation(); event.preventDefault();"
-			ondragover="event.stopPropagation(); event.preventDefault();">
-		</div>
-		<div id="preview"></div>
+		<div id="wrap">
+			<div id="main">
 
-		<canvas id="viewer" width="400" height="400">
-		</canvas>
+				<div id="left-wrap">
+					<div id="left">
+						<div id="viewer"
+							ondrop="event.stopPropagation(); event.preventDefault(); dodrop(event);"
+							ondragenter="document.getElementById('sidebar').textContent = ''; event.stopPropagation(); event.preventDefault();"
+							ondragover="event.stopPropagation(); event.preventDefault();">
+							<p class='viewer-instructions'>
+							drop an image here to begin
+							</p>
+						</div>
+					</div>
+				</div>
+				<div id="right">
+					<div class='labels'>
+						<p>Name:</p>
+						<p>Size:</p>
+						<p>Count:</p>
+					</div>
+
+					<div class='values'>
+						<p id='name'></p>
+						<p id='size'></p>
+						<p id='count'</p>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<div id="footer">
+			<h2>Log</h2>
+			<div id="log"></div>
+		</div>
+
 
 		<script>
 			var image;
-			var canvas = document.getElementById("viewer");
-			var preview = document.getElementById("preview");
+			var viewer = document.getElementById("viewer");
 
 			function dodrop(event)
 			{
@@ -45,7 +133,7 @@
 				var files = dt.files;
 
 				var count = files.length;
-				output("File Count: " + count + "\n");
+				log("File Count: " + count + "\n");
 
 				for (var i = 0; i < files.length; i++) {
 					var file = files[i];
@@ -58,7 +146,8 @@
 					var img = document.createElement("img");
 					img.classList.add("obj");
 					img.file = file;
-					preview.appendChild(img);
+
+					$('#viewer').empty().append(img);
 
 					var reader = new FileReader();
 					reader.onload = (function(aImg) { 
@@ -68,6 +157,11 @@
 						}; 
 					})(img);
 
+					image = file;
+
+					$("#name").html(file.name)
+					$("#size").html(parseSize(file.size))
+
 					reader.onerror = (function(error,message) {
 						console.log(error,message);
 					});
@@ -75,21 +169,62 @@
 				}
 			}
 
-			function output(text)
+			function parseSize(size) {
+				var suffix = ["bytes", "KB", "MB", "GB", "TB", "PB"],
+				tier = 0;
+
+				while(size >= 1024) {
+					size = size / 1024;
+					tier++;
+				}
+
+				return Math.round(size * 10) / 10 + " " + suffix[tier];
+			}
+
+			function log(text)
 			{
-				document.getElementById("output").textContent += text;
-				//dump(text);
+				$("#log").prepend("<p>" + text + "</p>");
 			}
 
 			$(document).ready(function() {
 				//alert(Modernizr.draganddrop);
 
-				$("#viewer").click(function(e) {
-					console.log(e.pageX, " ", e.pageY);
 
+				$("#viewer").click(function(e) {
+					gcanvas = document.getElementById("viewer");
+					var point = getCursorPosition(e,gcanvas);
+					log("added " +  e.pageX +  "," + e.pageY);
+					var ctx = gcanvas.getContext('2d');
+					ctx.fillStyle = 'rgb(255,255,255)';
+					ctx.fillRect(point.x,point.y,5,5);
+					log(point.x + " " + point.y + " " + 10 + " " + 10);
 				})
 
 			});
+
+			function getCursorPosition(e,canvas) {
+				var x;
+				var y;
+				if (e.pageX != undefined && e.pageY != undefined) {
+					x = e.pageX;
+					y = e.pageY;
+				}
+				else {
+					x = e.clientX + document.body.scrollLeft +
+					document.documentElement.scrollLeft;
+					y = e.clientY + document.body.scrollTop +
+					document.documentElement.scrollTop;
+
+				}
+				x -= canvas.offsetLeft;
+				y -= canvas.offsetTop;
+
+				var point = new Object();
+				point.x = x;
+				point.y = y
+
+				return point;
+			}
 
 		</script>
 	</body>
