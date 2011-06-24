@@ -17,7 +17,9 @@ A web-based image viewer with support for counting objects on the image. The cur
 * Export data as xml / some other format
 * Storage/memory of previous images (based on a hash of the file)
 * Undo/Redo functionality
+* allow specifying markers of your choice
 
 # Tasks:
 * Layout: image, sidebar, log
 * Drag images onto panel and have them auto-size
+* click should create a new marker div and position itself correctly

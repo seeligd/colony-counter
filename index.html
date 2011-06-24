@@ -42,10 +42,6 @@
 				max-width: 100%;
 			}
 
-			/* count number of clicks */
-			.count {
-			}
-
 			/* area where images get placed and edited */
 			#viewer {
 				margin: 0;
@@ -56,6 +52,7 @@
 
 			.viewer-instructions {
 				padding: 10%;
+				line-height: 2em;
 			}
 
 			.labels, .values {
@@ -80,6 +77,14 @@
 				overflow:scroll;
 			}
 
+			.marker {
+
+				position: absolute;
+				height: 2px;
+				width: 2px;
+				background: purple;
+			}
+
 		</style>
 
 	</head>
@@ -92,10 +97,10 @@
 					<div id="left">
 						<div id="viewer"
 							ondrop="event.stopPropagation(); event.preventDefault(); dodrop(event);"
-							ondragenter="document.getElementById('sidebar').textContent = ''; event.stopPropagation(); event.preventDefault();"
+							ondragenter="event.stopPropagation(); event.preventDefault();"
 							ondragover="event.stopPropagation(); event.preventDefault();">
 							<p class='viewer-instructions'>
-							drop an image here to begin
+							drop an image here to begin...
 							</p>
 						</div>
 					</div>
@@ -108,9 +113,10 @@
 					</div>
 
 					<div class='values'>
-						<p id='name'></p>
-						<p id='size'></p>
-						<p id='count'</p>
+						<p id='name'>&nbsp;</p>
+						<p id='size'>&nbsp;</p>
+						<p id='count'>&nbsp;</p>
+						<p><input type="button" value="reset" id="reset"/></p>
 					</div>
 				</div>
 
@@ -126,14 +132,15 @@
 		<script>
 			var image;
 			var viewer = document.getElementById("viewer");
+			var count = 0;
 
 			function dodrop(event)
 			{
 				var dt = event.dataTransfer;
 				var files = dt.files;
 
-				var count = files.length;
-				log("File Count: " + count + "\n");
+				var filecount = files.length;
+				//log("File Count: " + filecount + "\n");
 
 				for (var i = 0; i < files.length; i++) {
 					var file = files[i];
@@ -163,7 +170,11 @@
 					$("#size").html(parseSize(file.size))
 
 					reader.onerror = (function(error,message) {
-						console.log(error,message);
+						if (error.type == "error");
+							log("Error loading image...");
+					});
+					reader.onloadend = (function(error) {
+						//log(error.type);
 					});
 					reader.readAsDataURL(file);
 				}
@@ -193,11 +204,22 @@
 				$("#viewer").click(function(e) {
 					gcanvas = document.getElementById("viewer");
 					var point = getCursorPosition(e,gcanvas);
-					log("added " +  e.pageX +  "," + e.pageY);
-					var ctx = gcanvas.getContext('2d');
-					ctx.fillStyle = 'rgb(255,255,255)';
-					ctx.fillRect(point.x,point.y,5,5);
-					log(point.x + " " + point.y + " " + 10 + " " + 10);
+					//log("clicked " +  e.pageX +  "," + e.pageY);
+
+					jQuery('<div/>', {
+						class: 'marker',
+						css: { "left": point.x + "px", "top": point.y + "px" }
+					}).appendTo('#viewer');
+
+					count++;
+					$("#count").html(count);
+
+				})
+
+				$("#reset").click(function(e) {
+					count = 0;
+					$("#count").html("0");
+					$(".marker").remove();
 				})
 
 			});
