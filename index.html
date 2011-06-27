@@ -9,7 +9,9 @@
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 		<![endif]-->
 
+		<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
 		<script src="/cc/script/modernizr.js"></script>
 		<meta name="viewport" content="width=device-width">
 
@@ -45,7 +47,7 @@
 			/* area where images get placed and edited */
 			#viewer {
 				margin: 0;
-				background: #777;
+				background: #999;
 				min-height: 500px;
 				text-align: center;
 			}
@@ -55,21 +57,24 @@
 				line-height: 2em;
 			}
 
-			.labels, .values {
+			.labels, .values, .settings {
 				line-height: 20px;
 				margin-top: 20px;
+				color: #999;
 			}
 			.labels {
 				text-align: right;
 				float:left;
-				color: #999;
 				width: 45px;
 			}
 			.values {
 				float: right;
 				color: #777;
 				width: 150px;
-
+			}
+			.settings {
+				margin-top: 100px;
+				margin-left: 1em;
 			}
 
 			#log {
@@ -77,12 +82,22 @@
 				overflow:scroll;
 			}
 
-			.marker {
+			#footer {
+				display: none;
+			}
 
+			.marker {
 				position: absolute;
-				height: 2px;
-				width: 2px;
+				height: 4px;
+				width: 4px;
+				-moz-border-radius: 2px;
+				-webkit-border-radius: 2px;
 				background: purple;
+			}
+
+			#image_opacity, #marker_opacity {
+				width: 70%;
+				margin: 1em 0em 2em 1em;
 			}
 
 		</style>
@@ -97,8 +112,8 @@
 					<div id="left">
 						<div id="viewer"
 							ondrop="event.stopPropagation(); event.preventDefault(); dodrop(event);"
-							ondragenter="event.stopPropagation(); event.preventDefault();"
-							ondragover="event.stopPropagation(); event.preventDefault();">
+							ondragenter="event.stopPropagation(); event.preventDefault(); return true;"
+							ondragover="event.stopPropagation(); event.preventDefault(); return true;"> 
 							<p class='viewer-instructions'>
 							drop an image here to begin...
 							</p>
@@ -116,8 +131,21 @@
 						<p id='name'>&nbsp;</p>
 						<p id='size'>&nbsp;</p>
 						<p id='count'>&nbsp;</p>
+						<!--
 						<p><input type="button" value="reset" id="reset"/></p>
+						-->
 					</div>
+
+					<div class='settings'>
+						<p>Image Opacity:</p>
+						<div id="image_opacity"></div>
+						<p>Marker Opacity:</p>
+						<div id="marker_opacity"></div>
+						<!--
+						<p>Marker Color:</p>
+						-->
+					</div>
+
 				</div>
 
 			</div>
@@ -130,9 +158,13 @@
 
 
 		<script>
-			var image;
 			var viewer = document.getElementById("viewer");
 			var count = 0;
+			var currentImage;
+			var markers = [];
+
+			var imageOpacity = 1;
+			var markerOpacity = 1;
 
 			function dodrop(event)
 			{
@@ -146,6 +178,7 @@
 					var file = files[i];
 					var imageType = /image.*/;
 
+					// ignore non-images
 					if (!file.type.match(imageType)) {
 						continue;
 					}
@@ -153,7 +186,9 @@
 					var img = document.createElement("img");
 					img.classList.add("obj");
 					img.file = file;
+					currentImage  = img;
 
+					// clear the previou image from the viewer
 					$('#viewer').empty().append(img);
 
 					var reader = new FileReader();
@@ -164,10 +199,16 @@
 						}; 
 					})(img);
 
-					image = file;
 
+					// set up the name and size
+					resetCount();
 					$("#name").html(file.name)
 					$("#size").html(parseSize(file.size))
+
+					// wire up the event
+					$('.obj').click(function(e) {
+						dropMarker(e);
+					})
 
 					reader.onerror = (function(error,message) {
 						if (error.type == "error");
@@ -192,37 +233,63 @@
 				return Math.round(size * 10) / 10 + " " + suffix[tier];
 			}
 
-			function log(text)
-			{
-				$("#log").prepend("<p>" + text + "</p>");
-			}
 
 			$(document).ready(function() {
-				//alert(Modernizr.draganddrop);
+				$('#image_opacity').slider({
+					max: 1, min: 0, step: 0.01, value: 1,
+					slide: function(event, ui) { 
+						imageOpacity = ui.value;
+						currentImage.style.opacity = ui.value; 
+					},
+				});
+				$('#marker_opacity').slider({
+					max: 1, min: 0, step: 0.01, value: 1,
+					slide: function(event, ui) { $('.marker').each(function() { $(this).css('opacity', ui.value); }) },
+				});
 
-
-				$("#viewer").click(function(e) {
-					gcanvas = document.getElementById("viewer");
-					var point = getCursorPosition(e,gcanvas);
-					//log("clicked " +  e.pageX +  "," + e.pageY);
-
-					jQuery('<div/>', {
-						class: 'marker',
-						css: { "left": point.x + "px", "top": point.y + "px" }
-					}).appendTo('#viewer');
-
-					count++;
-					$("#count").html(count);
-
-				})
-
-				$("#reset").click(function(e) {
-					count = 0;
-					$("#count").html("0");
-					$(".marker").remove();
-				})
+				// TODO: put dodrop event here
 
 			});
+
+			function changeImageOpacity(event, ui) {
+				console.log(event);
+				console.log(ui);
+			}
+
+			function dropMarker(e) {
+				gcanvas = document.getElementById("viewer");
+				var point = getCursorPosition(e,gcanvas);
+
+				jQuery('<div/>', {
+					class: 'marker',
+					css: { 
+						"left": point.x + "px", 
+						"top": point.y + "px",
+						"opacity" : markerOpacity
+					}
+				}).appendTo('#viewer');
+
+				count++;
+				$("#count").html(count);
+			}
+
+			function resetCount() {
+				count = 0;
+				markers = [];
+				$("#count").html("0");
+				$(".marker").remove();
+
+				// while we're at it, set the opacity
+				currentImage.style.opacity = imageOpacity;
+			}
+
+			function undo() {
+				log("Undo not implemented yet");
+			}
+
+			function redo() {
+				log("Redo not implemented yet");
+			}
 
 			function getCursorPosition(e,canvas) {
 				var x;
@@ -246,6 +313,11 @@
 				point.y = y
 
 				return point;
+			}
+
+			function log(text)
+			{
+				$("#log").prepend("<p>" + text + "</p>");
 			}
 
 		</script>
