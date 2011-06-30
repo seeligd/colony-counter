@@ -1,17 +1,19 @@
-## Colony Counter
+# Colony Counter
 
-# Description
+## Description
 
 A web-based image viewer with support for counting objects on the image. The current flow is planned as follows:
 
-# V1 Plans
+## V1 Plans
+
 * Drag file (image) onto the viewer
 * View info about the file (name, date(?) size)
 * Allow clicking on the image to drop small markers
 * Clicking a marker a second time deletes the marker
 * Overall count of the number of markers
 
-# Desirable Features
+## Desirable Features
+
 * Allow changing the opacity of all the markers via a slider
 * Allow zooming in/out in the image (and have the points reflect the zoom)
 * Export data as xml / some other format
@@ -20,5 +22,6 @@ A web-based image viewer with support for counting objects on the image. The cur
 * allow specifying markers of your choice
 
 # Tasks:
+
 * fix exact click coordinates
 * implement sliders for image and maker opacities
