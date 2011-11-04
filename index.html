@@ -1,325 +1,90 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<title>colony counter</title>
-		<link rel="stylesheet" type="text/css" href="css/style.css" />
-		<link rel="stylesheet" type="text/css" href="css/stickyfooter.css" />
-		<!--[if IE]>
-		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-		<![endif]-->
+<!doctype html>
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!-- Consider adding a manifest.appcache: h5bp.com/d/Offline -->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
 
-		<link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.js"></script>
-		<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
-		<script src="/cc/script/modernizr.js"></script>
-		<meta name="viewport" content="width=device-width">
+  <!-- Use the .htaccess and remove these lines to avoid edge case issues.
+       More info: h5bp.com/b/378 -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-		<style>
+  <title></title>
+  <meta name="description" content="">
+  <meta name="author" content="">
 
-			body {
-				font-family: Helvetica, Arial, sans-serif;
-				color: #555;
-				font-size: .8em;
-			}
-			#left-wrap{
-				float: left;
-				width: 100%;
-			}
-			#left{
-				background-color: cyan;
-				margin-right: 200px;
-			}
-			#right{
-				float: left;
-				width: 200px;
-				margin-left: -200px;
-			}
-			#clear{
-				clear: both;
-			}
+  <!-- Mobile viewport optimized: j.mp/bplateviewport -->
+  <meta name="viewport" content="width=device-width,initial-scale=1">
 
-			/* use for images that get imported */
-			.obj {
-				max-width: 100%;
-			}
+  <!-- Place favicon.ico and apple-touch-icon.png in the root directory: mathiasbynens.be/notes/touch-icons -->
 
-			/* area where images get placed and edited */
-			#viewer {
-				margin: 0;
-				background: #999;
-				min-height: 500px;
-				text-align: center;
-			}
+  <link rel="stylesheet" href="css/style.css">
+  
+  <!-- More ideas for your <head> here: h6bp.com/d/head-Tips -->
 
-			.viewer-instructions {
-				padding: 10%;
-				line-height: 2em;
-			}
+  <!-- All JavaScript at the bottom, except this Modernizr build incl. Respond.js
+       Respond is a polyfill for min/max-width media queries. Modernizr enables HTML5 elements & feature detects; 
+       for optimal performance, create your own custom Modernizr build: www.modernizr.com/download/ -->
+  <script src="js/libs/modernizr-2.0.6.min.js"></script>
+</head>
 
-			.labels, .values, .settings {
-				line-height: 20px;
-				margin-top: 20px;
-				color: #999;
-			}
-			.labels {
-				text-align: right;
-				float:left;
-				width: 45px;
-			}
-			.values {
-				float: right;
-				color: #777;
-				width: 150px;
-			}
-			.settings {
-				margin-top: 100px;
-				margin-left: 1em;
-			}
+<body>
+  <header>
 
-			#log {
-				height: 130px;
-				overflow:scroll;
-			}
+  </header>
+  <div id="content">
+	<canvas id="slate" resize></canvas>
 
-			#footer {
-				display: none;
-			}
+	<div id="controls">
+		<button id="zoom_in">+</button>
+		<button id="zoom_out">&ndash;</button>
+		<button id="up">&uarr;</button>
+		<button id="down">&darr;</button>
+		<button id="left">&larr;</button>
+		<button id="right">&rarr;</button>
+	</div>
+  </div>
+  <div id='resources' class='hidden'>
+  </div>
+  <footer>
 
-			.marker {
-				position: absolute;
-				height: 4px;
-				width: 4px;
-				-moz-border-radius: 2px;
-				-webkit-border-radius: 2px;
-				background: purple;
-			}
-
-			#image_opacity, #marker_opacity {
-				width: 70%;
-				margin: 1em 0em 2em 1em;
-			}
-
-		</style>
-
-	</head>
-	<body>
-
-		<div id="wrap">
-			<div id="main">
-
-				<div id="left-wrap">
-					<div id="left">
-						<div id="viewer"
-							ondrop="event.stopPropagation(); event.preventDefault(); dodrop(event);"
-							ondragenter="event.stopPropagation(); event.preventDefault(); return true;"
-							ondragover="event.stopPropagation(); event.preventDefault(); return true;"> 
-							<p class='viewer-instructions'>
-							drop an image here to begin...
-							</p>
-						</div>
-					</div>
-				</div>
-				<div id="right">
-					<div class='labels'>
-						<p>Name:</p>
-						<p>Size:</p>
-						<p>Count:</p>
-					</div>
-
-					<div class='values'>
-						<p id='name'>&nbsp;</p>
-						<p id='size'>&nbsp;</p>
-						<p id='count'>&nbsp;</p>
-						<!--
-						<p><input type="button" value="reset" id="reset"/></p>
-						-->
-					</div>
-
-					<div class='settings'>
-						<p>Image Opacity:</p>
-						<div id="image_opacity"></div>
-						<p>Marker Opacity:</p>
-						<div id="marker_opacity"></div>
-						<!--
-						<p>Marker Color:</p>
-						-->
-					</div>
-
-				</div>
-
-			</div>
-		</div>
-
-		<div id="footer">
-			<h2>Log</h2>
-			<div id="log"></div>
-		</div>
+  </footer>
 
 
-		<script>
-			var viewer = document.getElementById("viewer");
-			var count = 0;
-			var currentImage;
-			var markers = [];
+  <!-- JavaScript at the bottom for fast page loading -->
 
-			var imageOpacity = 1;
-			var markerOpacity = 1;
-
-			function dodrop(event)
-			{
-				var dt = event.dataTransfer;
-				var files = dt.files;
-
-				var filecount = files.length;
-				//log("File Count: " + filecount + "\n");
-
-				for (var i = 0; i < files.length; i++) {
-					var file = files[i];
-					var imageType = /image.*/;
-
-					// ignore non-images
-					if (!file.type.match(imageType)) {
-						continue;
-					}
-
-					var img = document.createElement("img");
-					img.classList.add("obj");
-					img.file = file;
-					currentImage  = img;
-
-					// clear the previou image from the viewer
-					$('#viewer').empty().append(img);
-
-					var reader = new FileReader();
-					reader.onload = (function(aImg) { 
-						// successful
-						return function(e) { 
-							aImg.src = e.target.result; 
-						}; 
-					})(img);
+  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="js/libs/jquery-1.6.4.min.js"><\/script>')</script>
 
 
-					// set up the name and size
-					resetCount();
-					$("#name").html(file.name)
-					$("#size").html(parseSize(file.size))
-
-					// wire up the event
-					$('.obj').click(function(e) {
-						dropMarker(e);
-					})
-
-					reader.onerror = (function(error,message) {
-						if (error.type == "error");
-							log("Error loading image...");
-					});
-					reader.onloadend = (function(error) {
-						//log(error.type);
-					});
-					reader.readAsDataURL(file);
-				}
-			}
-
-			function parseSize(size) {
-				var suffix = ["bytes", "KB", "MB", "GB", "TB", "PB"],
-				tier = 0;
-
-				while(size >= 1024) {
-					size = size / 1024;
-					tier++;
-				}
-
-				return Math.round(size * 10) / 10 + " " + suffix[tier];
-			}
+  <!-- scripts concatenated and minified via build script -->
+  <script defer src="js/plugins.js"></script>
+  <script defer src="js/libs/paper.js"></script>
+  <script defer src="js/script.js"></script>
+  <!-- end scripts -->
 
 
-			$(document).ready(function() {
-				$('#image_opacity').slider({
-					max: 1, min: 0, step: 0.01, value: 1,
-					slide: function(event, ui) { 
-						imageOpacity = ui.value;
-						currentImage.style.opacity = ui.value; 
-					},
-				});
-				$('#marker_opacity').slider({
-					max: 1, min: 0, step: 0.01, value: 1,
-					slide: function(event, ui) { $('.marker').each(function() { $(this).css('opacity', ui.value); }) },
-				});
+  <!-- Asynchronous Google Analytics snippet. Change UA-XXXXX-X to be your site's ID.
+       mathiasbynens.be/notes/async-analytics-snippet -->
+  <!--
+  <script>
+    var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview'],['_trackPageLoadTime']];
+    (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+    g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+    s.parentNode.insertBefore(g,s)}(document,'script'));
+  </script>
+  -->
 
-				// TODO: put dodrop event here
+  <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
+       chromium.org/developers/how-tos/chrome-frame-getting-started -->
+  <!--[if lt IE 7 ]>
+    <script defer src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+    <script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+  <![endif]-->
 
-			});
-
-			function changeImageOpacity(event, ui) {
-				console.log(event);
-				console.log(ui);
-			}
-
-			function dropMarker(e) {
-				gcanvas = document.getElementById("viewer");
-				var point = getCursorPosition(e,gcanvas);
-
-				jQuery('<div/>', {
-					class: 'marker',
-					css: { 
-						"left": point.x + "px", 
-						"top": point.y + "px",
-						"opacity" : markerOpacity
-					}
-				}).appendTo('#viewer');
-
-				count++;
-				$("#count").html(count);
-			}
-
-			function resetCount() {
-				count = 0;
-				markers = [];
-				$("#count").html("0");
-				$(".marker").remove();
-
-				// while we're at it, set the opacity
-				currentImage.style.opacity = imageOpacity;
-			}
-
-			function undo() {
-				log("Undo not implemented yet");
-			}
-
-			function redo() {
-				log("Redo not implemented yet");
-			}
-
-			function getCursorPosition(e,canvas) {
-				var x;
-				var y;
-				if (e.pageX != undefined && e.pageY != undefined) {
-					x = e.pageX;
-					y = e.pageY;
-				}
-				else {
-					x = e.clientX + document.body.scrollLeft +
-					document.documentElement.scrollLeft;
-					y = e.clientY + document.body.scrollTop +
-					document.documentElement.scrollTop;
-
-				}
-				x -= canvas.offsetLeft;
-				y -= canvas.offsetTop;
-
-				var point = new Object();
-				point.x = x;
-				point.y = y
-
-				return point;
-			}
-
-			function log(text)
-			{
-				$("#log").prepend("<p>" + text + "</p>");
-			}
-
-		</script>
-	</body>
+</body>
 </html>
